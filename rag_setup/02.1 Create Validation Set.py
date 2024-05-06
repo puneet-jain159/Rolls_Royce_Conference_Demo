@@ -4,7 +4,7 @@
 # COMMAND ----------
 
 # Generate volume_folder path
-volume_folder = f"/Volumes/{catalog}/{db}/volume_rr_documentation/evaluation_dataset"
+volume_folder = f"/Volumes/{catalog}/{db}/documentation/evaluation_dataset"
 
 # COMMAND ----------
 

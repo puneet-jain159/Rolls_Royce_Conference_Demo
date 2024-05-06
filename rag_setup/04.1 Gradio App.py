@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install dbtunnel[gradio,ngrok] gradio
+# MAGIC %pip install dbtunnel[gradio,ngrok]
 
 # COMMAND ----------
 
@@ -18,8 +18,8 @@ import mlflow
 
 mlflow.set_registry_uri('databricks-uc')
 client = MlflowClient()
-model_name = f"{catalog}.{db}.dbdemos_advanced_chatbot_model"
-serving_endpoint_name = f"dbdemos_endpoint_advanced_{catalog}_{db}"[:63]
+model_name = f"{catalog}.{db}.hackdemo_advanced_chatbot_model"
+serving_endpoint_name = f"hackdemo_endpoint_advanced_{catalog}_{db}"[:63]
 latest_model = client.get_model_version_by_alias(model_name, "prod")
 
 serving_client = EndpointApiClient()
@@ -84,19 +84,14 @@ with gr.Blocks() as demo:
 
     msg.submit(respond, [msg, chatbot], [msg, chatbot])
 
-def same_auth(username, password):
-    return username == password
 
-demo.launch(auth=same_auth)
+demo.launch()
 demo.queue()
 
 # COMMAND ----------
 
 from dbtunnel import dbtunnel
-dbtunnel.gradio(demo).share_to_internet_via_ngrok(
-    ngrok_api_token="<Add API>",
-    ngrok_tunnel_auth_token="<Add API>"
-).run()
+dbtunnel.gradio(demo).run()
 
 # COMMAND ----------
 

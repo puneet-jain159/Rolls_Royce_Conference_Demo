@@ -207,7 +207,6 @@ print(is_about_incident_chain.invoke({
 
 # COMMAND ----------
 
-import time
 
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service import workspace

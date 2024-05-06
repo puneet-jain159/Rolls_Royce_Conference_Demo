@@ -32,6 +32,7 @@
 # COMMAND ----------
 
 # MAGIC %pip install databricks-sdk==0.12.0 mlflow==2.10.1 textstat==0.7.3 tiktoken==0.5.1 evaluate==0.4.1 langchain==0.1.5 databricks-vectorsearch==0.22 transformers==4.30.2 torch==2.0.1 cloudpickle==2.2.1 pydantic==2.5.2
+# MAGIC %pip install --upgrade sqlalchemy
 # MAGIC dbutils.library.restartPython()
 
 # COMMAND ----------
@@ -59,11 +60,25 @@
 
 # COMMAND ----------
 
+from databricks.sdk import WorkspaceClient
+from databricks.sdk.service import workspace
+
+w = WorkspaceClient()
+
+scope_name = 'hack_demo'
+key_name = 'openai_key'
+# w.secrets.put_acl(scope=scope_name, permission=workspace.AclPermission.READ, principal="users")
+# w.secrets.create_scope(scope=scope_name)
+# w.secrets.delete_secret(scope=scope_name, key=key_name) 
+# w.secrets.put_secret(scope=scope_name, key=key_name, string_value="<>")
+
+# COMMAND ----------
+
 from mlflow.deployments import get_deploy_client
 deploy_client = get_deploy_client("databricks")
 
 try:
-    endpoint_name  = "rr-azure-openai"
+    endpoint_name  = "hackdemo-azure-openai"
     deploy_client.create_endpoint(
         name=endpoint_name,
         config={
@@ -75,7 +90,7 @@ try:
                         "provider": "openai",
                         "task": "llm/v1/chat",
                         "openai_config": {
-                            "openai_api_key": "{{secrets/pj_secrets/openai_key}}", #Replace with your own azure 
+                            "openai_api_key": "{{secrets/hack_demo/openai_key}}", #Replace with your own azure 
                         }
                     }
                 }
@@ -106,7 +121,7 @@ answer_test['choices'][0]['message']['content']
 
 # COMMAND ----------
 
-volume_folder =  f"/Volumes/{catalog}/{db}/volume_rr_documentation/evaluation_dataset"
+volume_folder =  f"/Volumes/{catalog}/{db}/documentation/evaluation_dataset"
 #Load the eval dataset from the repository to our volume
 # upload_dataset_to_volume(volume_folder)
 
@@ -133,8 +148,8 @@ pip install mlflow[databricks]
 # COMMAND ----------
 
 import mlflow
-os.environ['DATABRICKS_TOKEN'] = dbutils.secrets.get("dbdemos", "rag_sp_token")
-model_name = f"{catalog}.{db}.dbdemos_advanced_chatbot_model"
+os.environ['DATABRICKS_TOKEN'] = dbutils.secrets.get("hack_demo", "pat")
+model_name = f"{catalog}.{db}.hackdemo_advanced_chatbot_model"
 model_version_to_evaluate = get_latest_model_version(model_name)
 mlflow.set_registry_uri("databricks-uc")
 rag_model = mlflow.langchain.load_model(f"models:/{model_name}/{model_version_to_evaluate}")
