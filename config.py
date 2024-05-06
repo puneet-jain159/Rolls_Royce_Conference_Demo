@@ -9,16 +9,16 @@
 
 # COMMAND ----------
 
-VECTOR_SEARCH_ENDPOINT_NAME="dbdemos_vs_endpoint"
+VECTOR_SEARCH_ENDPOINT_NAME="vs_endpoint"
 
 DATABRICKS_SITEMAP_URL = "https://docs.databricks.com/en/doc-sitemap.xml"
 
-catalog = "mlops_pj"
+catalog = "tda_experimentation"
 
 #email = spark.sql('select current_user() as user').collect()[0]['user']
 #username = email.split('@')[0].replace('.', '_')
 #dbName = db = f"rag_chatbot_{username}"
-dbName = db = "rr_rag_chatbot"
+dbName = db = "chatbot_walkthrough"
 
 # COMMAND ----------
 

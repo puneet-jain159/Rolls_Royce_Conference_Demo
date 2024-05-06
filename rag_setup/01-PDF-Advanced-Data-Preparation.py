@@ -58,13 +58,13 @@
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC CREATE VOLUME IF NOT EXISTS volume_rr_documentation;
+# MAGIC CREATE VOLUME IF NOT EXISTS documentation;
 
 # COMMAND ----------
 
 # DBTITLE 1,Our pdf or docx files are available in our Volume (or DBFS)
 # List our raw PDF docs
-volume_folder =  f"/Volumes/{catalog}/{db}/volume_rr_documentation"
+volume_folder =  f"/Volumes/{catalog}/{db}/documentation"
 # Let's upload some pdf files to our volume as example using the UI for now
 
 display(dbutils.fs.ls(volume_folder))

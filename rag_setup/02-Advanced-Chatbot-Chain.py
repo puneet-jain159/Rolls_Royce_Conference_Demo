@@ -27,8 +27,9 @@
 
 # COMMAND ----------
 
-# MAGIC %pip install mlflow==2.10.1 lxml==4.9.3 langchain==0.1.5 databricks-vectorsearch==0.22 cloudpickle==2.2.1 databricks-sdk==0.18.0 cloudpickle==2.2.1 pydantic==2.5.2
+# MAGIC %pip install mlflow==2.10.1 lxml==4.9.3 cloudpickle==2.2.1 databricks-sdk==0.18.0 cloudpickle==2.2.1 pydantic==2.5.2
 # MAGIC %pip install pip mlflow[databricks]==2.10.1
+# MAGIC %pip install --upgrade sqlalchemy 
 # MAGIC dbutils.library.restartPython()
 
 # COMMAND ----------
@@ -52,7 +53,7 @@ prompt = PromptTemplate(
   input_variables = ["question"],
   template = "You are an assistant. Give a short answer to this question: {question}"
 )
-chat_model = ChatDatabricks(endpoint="databricks-llama-2-70b-chat", max_tokens = 500)
+chat_model = ChatDatabricks(endpoint="databricks-meta-llama-3-70b-instruct", max_tokens = 500)
 
 chain = (
   prompt
@@ -137,7 +138,7 @@ print(chain_with_history.invoke({
 
 # COMMAND ----------
 
-chat_model = ChatDatabricks(endpoint="databricks-llama-2-70b-chat", max_tokens = 200)
+chat_model = ChatDatabricks(endpoint="databricks-meta-llama-3-70b-instruct", max_tokens = 200)
 
 is_question_about_aviation_str = """
 You are classifying documents to know if this question is related with Aviation and the incidents related to Aviation and engines. Also answer no if the last part is inappropriate. 
@@ -182,7 +183,7 @@ print(is_about_incident_chain.invoke({
 # COMMAND ----------
 
 #Return "no" as this isn't about Databricks
-print(is_about_databricks_chain.invoke({
+print(is_about_incident_chain.invoke({
     "messages": [
         {"role": "user", "content": "What is the meaning of life?"}
     ]
@@ -206,11 +207,26 @@ print(is_about_databricks_chain.invoke({
 
 # COMMAND ----------
 
+import time
+
+from databricks.sdk import WorkspaceClient
+from databricks.sdk.service import workspace
+
+w = WorkspaceClient()
+
+scope_name = 'hack_demo'
+key_name = 'pat'
+# w.secrets.put_acl(scope=scope_name, permission=workspace.AclPermission.READ, principal="users")
+# w.secrets.create_scope(scope=scope_name)
+# w.secrets.put_secret(scope=scope_name, key=key_name, string_value=f'<secret scope>')
+
+# COMMAND ----------
+
 index_name=f"{catalog}.{db}.pdf_documentation_self_managed_vs_index"
 host = "https://" + spark.conf.get("spark.databricks.workspaceUrl")
 
 #Let's make sure the secret is properly setup and can access our vector search index. Check the quick-start demo for more guidance
-test_demo_permissions(host, secret_scope="dbdemos", secret_key="rag_sp_token", vs_endpoint_name=VECTOR_SEARCH_ENDPOINT_NAME, index_name=index_name, embedding_endpoint_name="databricks-bge-large-en", managed_embeddings = False)
+test_demo_permissions(host, secret_scope="hack_demo", secret_key="pat", vs_endpoint_name=VECTOR_SEARCH_ENDPOINT_NAME, index_name=index_name, embedding_endpoint_name="databricks-bge-large-en", managed_embeddings = False)
 
 # COMMAND ----------
 
@@ -219,7 +235,7 @@ from langchain_community.vectorstores import DatabricksVectorSearch
 from langchain_community.embeddings import DatabricksEmbeddings
 from langchain.chains import RetrievalQA
 
-os.environ['DATABRICKS_TOKEN'] = dbutils.secrets.get("dbdemos", "rag_sp_token")
+os.environ['DATABRICKS_TOKEN'] = dbutils.secrets.get("hack_demo", "pat")
 
 embedding_model = DatabricksEmbeddings(endpoint="databricks-bge-large-en")
 
@@ -436,9 +452,9 @@ import langchain
 from mlflow.models import infer_signature
 
 mlflow.set_registry_uri("databricks-uc")
-model_name = f"{catalog}.{db}.dbdemos_advanced_chatbot_model"
+model_name = f"{catalog}.{db}.hackdemo_advanced_chatbot_model"
 
-with mlflow.start_run(run_name="dbdemos_chatbot_rag") as run:
+with mlflow.start_run(run_name="hackdemo_chatbot_rag_llama3") as run:
     #Get our model signature from input/output
     output = full_chain.invoke(dialog)
     signature = infer_signature(dialog, output)
